@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>IsoRim Waylith - Holsters Pack</name>
+  <author>Lin</author>
+  <packageId>Peren.IsoRimWaylith.HolstersPack</packageId>
+  <supportedVersions>
+    <li>1.7</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>Peren.IsoRim17</packageId>
+      <displayName>IsoRim Waylith</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3819577715</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>IwoRosiak.Holsters</packageId>
+      <displayName>Holsters</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2610120706</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>Peren.IsoRim17</li>
+    <li>IwoRosiak.Holsters</li>
+  </loadAfter>
+  <description>Holsters in IsoRim's 3D view: sheathed weapons sit on the 3D figures.
+
+- Weapons show as IsoRim shows them in the hand: their 3D model, or their art made solid
+- Placed by your own Holsters settings, changes show at once
+- They follow the figure when it walks and turns
+
+A figure has one place per weapon: sideways, height and tilt come from the South settings, front to back and lean from the East settings. North and West do not change the 3D place.
+
+Needs IsoRim Waylith and Holsters.
+
+让 Holsters 的收纳武器在 IsoRim 的 3D 视角里挂在 3D 人物身上。
+
+- 武器和手持时一样显示：3D 模型，或把贴图做成立体
+- 位置来自你自己的 Holsters 设置，改动立即生效
+- 跟随人物行走和转身
+
+3D 人物上每件武器只有一个位置：左右、高度和倾斜取南向设置，前后和前倾取东向设置。北向和西向不影响 3D 位置。
+
+需要 IsoRim Waylith 和 Holsters。</description>
+</ModMetaData>
