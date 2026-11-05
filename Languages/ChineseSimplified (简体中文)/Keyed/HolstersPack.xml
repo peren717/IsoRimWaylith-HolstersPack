@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <IsoRimHolsters_Title>IsoRim Waylith - Holsters Pack</IsoRimHolsters_Title>
+  <IsoRimHolsters_Sideways>左右</IsoRimHolsters_Sideways>
+  <IsoRimHolsters_Height>高度</IsoRimHolsters_Height>
+  <IsoRimHolsters_Forward>前后</IsoRimHolsters_Forward>
+  <IsoRimHolsters_Reset>重置</IsoRimHolsters_Reset>
+  <IsoRimHolsters_CopyToGroup>复制给 {0} 全部武器</IsoRimHolsters_CopyToGroup>
+</LanguageData>

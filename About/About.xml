@@ -27,8 +27,9 @@
 - Weapons show as IsoRim shows them in the hand: their 3D model, or their art made solid
 - Placed by your own Holsters settings, changes show at once
 - They follow the figure when it walks and turns
+- Each weapon has its own 3D offsets in the mod settings: find it by name
 
-A figure has one place per weapon: sideways, height and tilt come from the South settings, front to back and lean from the East settings. North and West do not change the 3D place.
+A figure has one place per weapon: sideways and height come from the South settings, front to back and lean from the East settings, tilt from South or North, whichever shows the weapon in front of the body.
 
 Needs IsoRim Waylith and Holsters.
 
@@ -37,8 +38,9 @@ Needs IsoRim Waylith and Holsters.
 - 武器和手持时一样显示：3D 模型，或把贴图做成立体
 - 位置来自你自己的 Holsters 设置，改动立即生效
 - 跟随人物行走和转身
+- 每件武器可在模组设置里单独调 3D 偏移：按名字搜索
 
-3D 人物上每件武器只有一个位置：左右、高度和倾斜取南向设置，前后和前倾取东向设置。北向和西向不影响 3D 位置。
+3D 人物上每件武器只有一个位置：左右和高度取南向设置，前后和前倾取东向设置，倾斜取南向或北向中武器在身体前面的那一向。
 
 需要 IsoRim Waylith 和 Holsters。</description>
 </ModMetaData>

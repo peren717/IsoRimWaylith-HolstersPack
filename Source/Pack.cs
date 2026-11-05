@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -161,14 +162,17 @@ namespace IsoRimHolstersPack
     }
 
     // One fixed place on the body for a weapon in a Holsters slot. Players set each facing freely, so the rule is plain: the South
-    // settings give sideways, height, tilt and size, the East settings forward-back and lean. The North and West settings are not
-    // read. Read again every Refresh frames: a change in Holsters' settings shows at once.
+    // settings give sideways, height and size, the East settings forward-back and lean, and the tilt comes from the view that shows
+    // the weapon in front of the body: South if it is set over the body there, else North. West is not read, nor North's place.
+    // Read again every Refresh frames: a change in Holsters' settings shows at once. The player's offset for the weapon
+    // (HolstersPackSettings) goes on last, as it is: the weapon keeps its turn.
     //   - South view: screen right is the person's left, up is up (FigureFrame.BodySprite, so body types fit). East view: screen
     //     right is forward, at the body's height scale, from the middle of its depth (as IsoRim lays the side sprite on the body).
-    //   - The weapon's line: its sprite's long axis as Holsters turns it on the screen, South's tilt, East's lean.
+    //   - The weapon's line: its sprite's long axis as Holsters turns it on the screen: the tilt view's tilt, East's lean. Seen
+    //     from the north screen right is the person's right.
     //   - Layer: set over the body in South it lies in front of it (under: behind); in East on its right (under: left). Used only
     //     where the two views leave the weapon in the body: it moves out the shorter way the layers allow.
-    //   - It lies flat on the body: the picture's face toward the body's outside, its top the way South shows it.
+    //   - It lies flat on the body: the picture's face toward the body's outside, its top the way the tilt view shows it.
     internal static class Slot
     {
         private const float MaxLean = 3.73f;     // tan 75: an East view lying flat tells no lean beyond this
@@ -181,12 +185,15 @@ namespace IsoRimHolstersPack
         private sealed class Views
         {
             public Vector3 south, east;
-            public Vector2 front, top, topS, topE;
-            public Vector3 line;
-            public float sized, scale, forward, right;
+            public Vector2 front, top, topTilt, topE;
+            public Vector3 line, offset;
+            public float across, sized, scale, forward, right;   // across: the tilt view's screen right on the person's x
         }
 
         private static MethodInfo getPos, getAngle, getFlip, getLayer, getSize;
+        private static PropertyInfo nameOf;
+        private static FieldInfo groupsOf, displayOf, weaponsOf;
+        private static MethodInfo groupOf;
         private static Type bodyType;
         private static readonly Dictionary<ValueTuple<ThingDef, bool, BodyTypeDef>, Views> views = new Dictionary<ValueTuple<ThingDef, bool, BodyTypeDef>, Views>();
         private static int read = -Refresh;
@@ -204,7 +211,80 @@ namespace IsoRimHolstersPack
             getFlip = AccessTools.Method(settings, "GetWeaponFlip", new[] { group, typeof(Rot4), typeof(bool) });
             getLayer = AccessTools.Method(settings, "GetWeaponLayer", new[] { group, typeof(Rot4), typeof(bool) });
             getSize = AccessTools.Method(group, "GetSize", new[] { typeof(Rot4) });
-            return getPos != null && getAngle != null && getFlip != null && getLayer != null && getSize != null;
+            nameOf = AccessTools.Property(group, "Name");
+            displayOf = AccessTools.Field(group, "isDisplay");
+            groupsOf = AccessTools.Field(settings, "groups");
+            weaponsOf = AccessTools.Field(group, "weapons");
+            groupOf = AccessTools.Method(settings, "GetWeaponGroupOf", new[] { typeof(string) });
+            return getPos != null && getAngle != null && getFlip != null && getLayer != null && getSize != null && nameOf != null && displayOf != null && groupsOf != null
+                && weaponsOf != null && groupOf != null;
+        }
+
+        // The groups Holsters shows, by name (the settings window).
+        internal static List<string> GroupNames()
+        {
+            List<string> names = new List<string>();
+            IList groups = groupsOf != null ? groupsOf.GetValue(null) as IList : null;
+            if (groups != null)
+            {
+                foreach (object group in groups)
+                {
+                    if ((bool)displayOf.GetValue(group))
+                    {
+                        names.Add((string)nameOf.GetValue(group));
+                    }
+                }
+            }
+            return names;
+        }
+
+        // A loaded weapon for the settings window: its label, the label it has in the def's own language (the game keeps what a
+        // translation replaced), its Holsters group.
+        internal sealed class Weapon
+        {
+            public ThingDef def;
+            public string label, english, group;
+        }
+
+        internal static List<Weapon> Weapons()
+        {
+            Dictionary<string, DefInjectionPackage.DefInjection> injected = null;
+            foreach (DefInjectionPackage package in LanguageDatabase.activeLanguage.defInjections)
+            {
+                if (package.defType == typeof(ThingDef))
+                {
+                    injected = package.injections;
+                }
+            }
+            List<Weapon> weapons = new List<Weapon>();
+            if (groupsOf == null || groupsOf.GetValue(null) == null)
+            {
+                return weapons;
+            }
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs)
+            {
+                if (def.IsWeapon)
+                {
+                    DefInjectionPackage.DefInjection injection = null;
+                    bool has = injected != null && injected.TryGetValue(def.defName + ".label", out injection) && injection.injected;
+                    weapons.Add(new Weapon { def = def, label = def.label ?? def.defName, english = has ? injection.replacedString : def.label,
+                        group = (string)nameOf.GetValue(groupOf.Invoke(null, new object[] { def.defName })) });
+                }
+            }
+            weapons.SortBy(w => w.label);
+            return weapons;
+        }
+
+        // Every weapon in this one's Holsters group.
+        internal static List<string> WeaponsWith(string weapon)
+        {
+            return new List<string>((List<string>)weaponsOf.GetValue(groupOf.Invoke(null, new object[] { weapon })));
+        }
+
+        // A setting changed: read everything again now.
+        internal static void Reread()
+        {
+            read = -Refresh;
         }
 
         private static Views Read(Thing weapon, object group, bool side, BodyTypeDef def)
@@ -224,22 +304,26 @@ namespace IsoRimHolstersPack
             object body = Enum.Parse(bodyType, def.defName.ToLower());
             v.south = (Vector3)getPos.Invoke(null, new[] { group, Rot4.South, side, body });
             v.east = (Vector3)getPos.Invoke(null, new[] { group, Rot4.East, side, body });
-            float angleS = (float)getAngle.Invoke(null, new[] { group, Rot4.South, side }), angleE = (float)getAngle.Invoke(null, new[] { group, Rot4.East, side });
-            bool flipS = (bool)getFlip.Invoke(null, new[] { group, Rot4.South, side }), flipE = (bool)getFlip.Invoke(null, new[] { group, Rot4.East, side });
+            bool inFront = (bool)getLayer.Invoke(null, new[] { group, Rot4.South, side });
+            object tilt = inFront ? Rot4.South : Rot4.North;
+            float angleT = (float)getAngle.Invoke(null, new[] { group, tilt, side }), angleE = (float)getAngle.Invoke(null, new[] { group, Rot4.East, side });
+            bool flipT = (bool)getFlip.Invoke(null, new[] { group, tilt, side }), flipE = (bool)getFlip.Invoke(null, new[] { group, Rot4.East, side });
 
             Vector2 size = weapon.Graphic.drawSize;
             v.front = IsoRim.Api.WeaponAxis(weapon);
             v.top = new Vector2(-v.front.y, v.front.x);
-            Vector2 frontS = OnScreen(v.front, angleS, flipS), frontE = OnScreen(v.front, angleE, flipE);
-            v.topS = OnScreen(v.top, angleS, flipS);
+            Vector2 frontT = OnScreen(v.front, angleT, flipT), frontE = OnScreen(v.front, angleE, flipE);
+            v.topTilt = OnScreen(v.top, angleT, flipT);
             v.topE = OnScreen(v.top, angleE, flipE);
+            v.across = inFront ? -1f : 1f;
             float lean = Mathf.Abs(frontE.y) > 1e-3f ? Mathf.Clamp(frontE.x / frontE.y, -MaxLean, MaxLean) : MaxLean * Mathf.Sign(frontE.x);
-            v.line = new Vector3(-frontS.x, frontS.y, frontS.y * lean).normalized;
+            v.line = new Vector3(v.across * frontT.x, frontT.y, frontT.y * lean).normalized;
 
             v.sized = (float)getSize.Invoke(group, new object[] { Rot4.South }) / weapon.def.uiIconScale;
             v.scale = v.sized / size.x;
-            v.forward = (bool)getLayer.Invoke(null, new[] { group, Rot4.South, side }) ? 1f : -1f;
+            v.forward = inFront ? 1f : -1f;
             v.right = (bool)getLayer.Invoke(null, new[] { group, Rot4.East, side }) ? 1f : -1f;
+            v.offset = HolstersPackMod.Settings.OffsetOf(weapon.def.defName);
             views[key] = v;
             return v;
         }
@@ -263,7 +347,7 @@ namespace IsoRimHolstersPack
             }
             face.Normalize();
             Vector3 up = Vector3.Cross(face, line);
-            float seen = Vector2.Dot(new Vector2(-up.x, up.y), v.topS);
+            float seen = Vector2.Dot(new Vector2(v.across * up.x, up.y), v.topTilt);
             if (seen < 0f || (Mathf.Abs(seen) < 0.2f && Vector2.Dot(new Vector2(up.z, up.y), v.topE) < 0f))
             {
                 up = -up;
@@ -273,6 +357,7 @@ namespace IsoRimHolstersPack
             local.SetColumn(0, x);
             local.SetColumn(1, y);
             local.SetColumn(2, Vector3.Cross(x, y));
+            at += v.offset;
             local.SetColumn(3, new Vector4(at.x, at.y, at.z, 1f));
         }
 
