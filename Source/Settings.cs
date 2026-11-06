@@ -6,8 +6,9 @@ using Verse;
 namespace IsoRimHolstersPack
 {
     // The player's offsets, per weapon by defName: x sideways (+ the person's right), y height, z forward-back (+ forward), cells, on
-    // the weapon's 3D place in main and side slots alike. Its turns, degrees: x tilt, y lean (Slot.Spin). Missing means zero, and zero
-    // is not stored; a defName no longer loaded stays in the file, never asked for.
+    // the weapon's 3D place in main and side slots alike. Its turns, degrees: x tilt, y lean (Slot.Spin). An offset missing means zero, a
+    // turn missing the weapon's default (Slot.DefaultTurn), and those are not stored; a defName no longer loaded stays in the file, never
+    // asked for.
     public class HolstersPackSettings : ModSettings
     {
         internal Dictionary<string, Vector3> offsets = new Dictionary<string, Vector3>();
@@ -50,12 +51,12 @@ namespace IsoRimHolstersPack
         internal Vector2 TurnOf(string weapon)
         {
             Vector2 turn;
-            return turns.TryGetValue(weapon, out turn) ? turn : Vector2.zero;
+            return turns.TryGetValue(weapon, out turn) ? turn : Slot.DefaultTurn(weapon);
         }
 
         internal void SetTurn(string weapon, Vector2 turn)
         {
-            if (turn == Vector2.zero)
+            if (turn == Slot.DefaultTurn(weapon))
             {
                 turns.Remove(weapon);
             }
