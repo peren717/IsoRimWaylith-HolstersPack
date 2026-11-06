@@ -6,7 +6,9 @@
   <IsoRimHolsters_Forward>前后</IsoRimHolsters_Forward>
   <IsoRimHolsters_Tilt>倾斜</IsoRimHolsters_Tilt>
   <IsoRimHolsters_Lean>前倾</IsoRimHolsters_Lean>
-  <IsoRimHolsters_Reset>重置</IsoRimHolsters_Reset>
+  <IsoRimHolsters_Reset>恢复默认</IsoRimHolsters_Reset>
+  <IsoRimHolsters_ResetAll>全部恢复默认</IsoRimHolsters_ResetAll>
+  <IsoRimHolsters_ResetAllSure>把所有武器恢复默认？</IsoRimHolsters_ResetAllSure>
   <IsoRimHolsters_CopyToGroup>复制给 {0} 全部武器</IsoRimHolsters_CopyToGroup>
   <IsoRimHolsters_Preview>在地图上预览</IsoRimHolsters_Preview>
 </LanguageData>

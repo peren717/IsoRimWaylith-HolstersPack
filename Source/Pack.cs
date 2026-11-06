@@ -214,6 +214,7 @@ namespace IsoRimHolstersPack
         private const int Refresh = 30;
         private const string LongGuns = "Long Ranged";   // Holsters' group
         private const float LongGunTilt = 20f;
+        private const float LongGunDrop = -0.25f;
 
         // Holsters' settings for one weapon, slot and body type, as this pack uses them.
         private sealed class Views
@@ -317,10 +318,21 @@ namespace IsoRimHolstersPack
             return new List<string>((List<string>)weaponsOf.GetValue(groupOf.Invoke(null, new object[] { weapon })));
         }
 
-        // Holsters' long guns stand so steep on the back that the muzzle runs into a helmet: this tilt lays them under it.
+        // Holsters' long guns stand so steep and high on the back that the muzzle runs into a helmet, the big ones too: flatter and
+        // lower they lie under it.
         internal static Vector2 DefaultTurn(string weapon)
         {
-            return groupOf != null && (string)nameOf.GetValue(groupOf.Invoke(null, new object[] { weapon })) == LongGuns ? new Vector2(LongGunTilt, 0f) : Vector2.zero;
+            return LongGun(weapon) ? new Vector2(LongGunTilt, 0f) : Vector2.zero;
+        }
+
+        internal static Vector3 DefaultOffset(string weapon)
+        {
+            return LongGun(weapon) ? new Vector3(0f, LongGunDrop, 0f) : Vector3.zero;
+        }
+
+        private static bool LongGun(string weapon)
+        {
+            return groupOf != null && (string)nameOf.GetValue(groupOf.Invoke(null, new object[] { weapon })) == LongGuns;
         }
 
         // A setting changed: read everything again now.

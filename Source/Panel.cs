@@ -84,6 +84,10 @@ namespace IsoRimHolstersPack
             {
                 Sliders(right);
             }
+            if (Widgets.ButtonText(new Rect(right.x, right.yMax - ButtonHeight * 2f - 4f, right.width, ButtonHeight), "IsoRimHolsters_ResetAll".Translate()))
+            {
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("IsoRimHolsters_ResetAllSure".Translate(), HolstersPackMod.Settings.ResetAll, destructive: true));
+            }
             if (Current.ProgramState == ProgramState.Playing
                 && Widgets.ButtonText(new Rect(right.x, right.yMax - ButtonHeight, right.width, ButtonHeight), "IsoRimHolsters_Preview".Translate()))
             {
@@ -234,7 +238,7 @@ namespace IsoRimHolstersPack
             turn.y = Slider(rect, ref y, "IsoRimHolsters_Lean", turnWas.y, TurnRange, 1f, "0°");
             if (Widgets.ButtonText(new Rect(rect.x, y, rect.width, ButtonHeight), "IsoRimHolsters_Reset".Translate()))
             {
-                now = Vector3.zero;
+                now = Slot.DefaultOffset(name);
                 turn = Slot.DefaultTurn(name);
             }
             y += ButtonHeight + 4f;
