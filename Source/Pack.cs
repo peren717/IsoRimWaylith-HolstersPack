@@ -213,8 +213,8 @@ namespace IsoRimHolstersPack
         private const float Picture = 1.11f;     // the game's pictures to figure units (a weapon's size in the hand)
         private const int Refresh = 30;
         private const string LongGuns = "Long Ranged";   // Holsters' group
-        private const float LongGunTilt = 20f;
-        private const float LongGunDrop = -0.25f;
+        private const float LongGunTilt = 30f;
+        private const float LongGunDrop = -0.15f;
 
         // Holsters' settings for one weapon, slot and body type, as this pack uses them.
         private sealed class Views
