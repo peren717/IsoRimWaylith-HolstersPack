@@ -238,8 +238,8 @@ namespace IsoRimHolstersPack
             turn.y = Slider(rect, ref y, "IsoRimHolsters_Lean", turnWas.y, TurnRange, 1f, "0°");
             if (Widgets.ButtonText(new Rect(rect.x, y, rect.width, ButtonHeight), "IsoRimHolsters_Reset".Translate()))
             {
-                now = Slot.DefaultOffset(name);
-                turn = Slot.DefaultTurn(name);
+                now = Vector3.zero;
+                turn = Vector2.zero;
             }
             y += ButtonHeight + 4f;
             if (now != was)
