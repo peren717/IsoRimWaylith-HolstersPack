@@ -239,7 +239,7 @@ namespace IsoRimHolstersPack
             if (Widgets.ButtonText(new Rect(rect.x, y, rect.width, ButtonHeight), "IsoRimHolsters_Reset".Translate()))
             {
                 now = Vector3.zero;
-                turn = Vector2.zero;
+                turn = Slot.DefaultTurn(name);
             }
             y += ButtonHeight + 4f;
             if (now != was)

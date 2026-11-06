@@ -212,6 +212,8 @@ namespace IsoRimHolstersPack
         private const float Opaque = 0.45f;      // the weapon's half length, of its picture's side
         private const float Picture = 1.11f;     // the game's pictures to figure units (a weapon's size in the hand)
         private const int Refresh = 30;
+        private const string LongGuns = "Long Ranged";   // Holsters' group
+        private const float LongGunLean = -30f;
 
         // Holsters' settings for one weapon, slot and body type, as this pack uses them.
         private sealed class Views
@@ -313,6 +315,12 @@ namespace IsoRimHolstersPack
         internal static List<string> WeaponsWith(string weapon)
         {
             return new List<string>((List<string>)weaponsOf.GetValue(groupOf.Invoke(null, new object[] { weapon })));
+        }
+
+        // Holsters' long guns lie flat on the back, the muzzle in a helmet: leaning out it clears the helmet, the angle as it was.
+        internal static Vector2 DefaultTurn(string weapon)
+        {
+            return groupOf != null && (string)nameOf.GetValue(groupOf.Invoke(null, new object[] { weapon })) == LongGuns ? new Vector2(0f, LongGunLean) : Vector2.zero;
         }
 
         // A setting changed: read everything again now.
