@@ -4,6 +4,9 @@
   <IsoRimHolsters_Sideways>Sideways</IsoRimHolsters_Sideways>
   <IsoRimHolsters_Height>Height</IsoRimHolsters_Height>
   <IsoRimHolsters_Forward>Forward-back</IsoRimHolsters_Forward>
+  <IsoRimHolsters_Tilt>Tilt</IsoRimHolsters_Tilt>
+  <IsoRimHolsters_Lean>Lean</IsoRimHolsters_Lean>
   <IsoRimHolsters_Reset>Reset</IsoRimHolsters_Reset>
   <IsoRimHolsters_CopyToGroup>Copy to all in {0}</IsoRimHolsters_CopyToGroup>
+  <IsoRimHolsters_Preview>Preview on the map</IsoRimHolsters_Preview>
 </LanguageData>

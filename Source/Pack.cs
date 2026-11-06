@@ -117,6 +117,38 @@ namespace IsoRimHolstersPack
             }
         }
 
+        // What this pawn has out, for the floating window: the primary, then whatever Holsters would show on it now.
+        internal static List<ThingWithComps> WeaponsOn(Pawn pawn)
+        {
+            List<ThingWithComps> weapons = new List<ThingWithComps>();
+            if (pawn.equipment != null && pawn.equipment.Primary != null)
+            {
+                weapons.Add(pawn.equipment.Primary);
+            }
+            if (drawWeaponsFor == null || pawn.Dead || !pawn.def.HasComp(comp))
+            {
+                return weapons;
+            }
+            caught.Clear();
+            catching = true;
+            try
+            {
+                drawWeaponsFor(pawn);
+            }
+            finally
+            {
+                catching = false;
+            }
+            for (int i = 0; i < caught.Count; i++)
+            {
+                if (!weapons.Contains(caught[i].weapon))
+                {
+                    weapons.Add(caught[i].weapon);
+                }
+            }
+            return weapons;
+        }
+
         // The plane Holsters is about to draw: which weapon, by which group and slot.
         public static void Properties_Prefix(ThingWithComps item, object groupSettings, bool isSide)
         {
@@ -164,8 +196,8 @@ namespace IsoRimHolstersPack
     // One fixed place on the body for a weapon in a Holsters slot. Players set each facing freely, so the rule is plain: the South
     // settings give sideways, height and size, the East settings forward-back and lean, and the tilt comes from the view that shows
     // the weapon in front of the body: South if it is set over the body there, else North. West is not read, nor North's place.
-    // Read again every Refresh frames: a change in Holsters' settings shows at once. The player's offset for the weapon
-    // (HolstersPackSettings) goes on last, as it is: the weapon keeps its turn.
+    // Read again every Refresh frames: a change in Holsters' settings shows at once. The player's turns and offset for the weapon
+    // (HolstersPackSettings) go on last, as they are: the turns round the weapon's middle (Spin), the offset leaves its turn alone.
     //   - South view: screen right is the person's left, up is up (FigureFrame.BodySprite, so body types fit). East view: screen
     //     right is forward, at the body's height scale, from the middle of its depth (as IsoRim lays the side sprite on the body).
     //   - The weapon's line: its sprite's long axis as Holsters turns it on the screen: the tilt view's tilt, East's lean. Seen
@@ -187,6 +219,8 @@ namespace IsoRimHolstersPack
             public Vector3 south, east;
             public Vector2 front, top, topTilt, topE;
             public Vector3 line, offset;
+            public Quaternion spin;
+            public bool spun;
             public float across, sized, scale, forward, right;   // across: the tilt view's screen right on the person's x
         }
 
@@ -324,6 +358,12 @@ namespace IsoRimHolstersPack
             v.forward = inFront ? 1f : -1f;
             v.right = (bool)getLayer.Invoke(null, new[] { group, Rot4.East, side }) ? 1f : -1f;
             v.offset = HolstersPackMod.Settings.OffsetOf(weapon.def.defName);
+            Vector2 turn = HolstersPackMod.Settings.TurnOf(weapon.def.defName);
+            v.spun = turn != Vector2.zero;
+            if (v.spun)
+            {
+                v.spin = Spin(Muzzle(weapon, v), turn);
+            }
             views[key] = v;
             return v;
         }
@@ -353,12 +393,33 @@ namespace IsoRimHolstersPack
                 up = -up;
             }
             Vector3 x = line * v.front.x + up * v.top.x, y = line * v.front.y + up * v.top.y;
+            if (v.spun)
+            {
+                x = v.spin * x;
+                y = v.spin * y;
+            }
             local = Matrix4x4.identity;
             local.SetColumn(0, x);
             local.SetColumn(1, y);
             local.SetColumn(2, Vector3.Cross(x, y));
             at += v.offset;
             local.SetColumn(3, new Vector4(at.x, at.y, at.z, 1f));
+        }
+
+        // The weapon's line as it points at the muzzle or tip: WeaponAxis gives either end; the game's equippedAngleOffset turns the
+        // picture so that this end points where the weapon aims.
+        private static Vector3 Muzzle(Thing weapon, Views v)
+        {
+            float aim = weapon.def.equippedAngleOffset * Mathf.Deg2Rad;
+            return Vector2.Dot(v.front, new Vector2(Mathf.Cos(aim), Mathf.Sin(aim))) < 0f ? -v.line : v.line;
+        }
+
+        // The player's turns: tilt clockwise in the plane of the back, seen from behind; then lean, the muzzle toward the front.
+        private static Quaternion Spin(Vector3 muzzle, Vector2 turn)
+        {
+            Quaternion tilt = Quaternion.AngleAxis(-turn.x, Vector3.forward);
+            Vector3 axis = Vector3.Cross(tilt * muzzle, Vector3.forward);
+            return Quaternion.AngleAxis(turn.y, axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right) * tilt;
         }
 
         // A picture's direction on the screen as Holsters draws it: mirrored in x on the flipped mesh and turned half round, then

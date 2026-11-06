@@ -4,6 +4,9 @@
   <IsoRimHolsters_Sideways>左右</IsoRimHolsters_Sideways>
   <IsoRimHolsters_Height>高度</IsoRimHolsters_Height>
   <IsoRimHolsters_Forward>前后</IsoRimHolsters_Forward>
+  <IsoRimHolsters_Tilt>倾斜</IsoRimHolsters_Tilt>
+  <IsoRimHolsters_Lean>前倾</IsoRimHolsters_Lean>
   <IsoRimHolsters_Reset>重置</IsoRimHolsters_Reset>
   <IsoRimHolsters_CopyToGroup>复制给 {0} 全部武器</IsoRimHolsters_CopyToGroup>
+  <IsoRimHolsters_Preview>在地图上预览</IsoRimHolsters_Preview>
 </LanguageData>
